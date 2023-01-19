@@ -2,7 +2,7 @@
 
 It is recommended to create a new anaconda virtual environment using the following command.
 
-```conda create -n seal_det```
+```conda create -n seal_det pip python=3.9```
 
 Activate the virtual environment using the following command.
 
