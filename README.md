@@ -39,7 +39,7 @@ The FastAPI server can also be served using Docker:
 
 ```shell
 docker build -t seal_det_api .
-docker run --gpus all --rm --name seal_detector -v $(pwd)/docker_outputs:/outputs -p 8000:8000 seal_det_api
+docker run --gpus all --rm --name seal_detector -v $(pwd)/outputs/docker:/outputs -p 8000:8000 seal_det_api
 ```
 
 And then tested the same as running it outside of Docker
@@ -55,11 +55,10 @@ The models can be served with Tensorflow Serving:
 ```shell
 # Location of demo models
 export MODEL_NAME="seal_detector"
-export MODEL_DATA="$(pwd)/saved_model/"
 
 # Start TensorFlow Serving container and open the REST API port
 docker run -t --rm -p 8501:8501 \
-    -v "$MODEL_DATA:/models/${MODEL_NAME}" \
+    -v "$(pwd)/${MODEL_NAME}:/models/${MODEL_NAME}" \
     -e MODEL_NAME=${MODEL_NAME} \
     tensorflow/serving
 ```

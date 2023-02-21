@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import os
 import cv2
 import requests
 import numpy as np
@@ -13,13 +14,17 @@ font = cv2.FONT_HERSHEY_SIMPLEX
 
 headers = {"content-type": "application/json"}
 
-images = [ str(p) for p in Path(__file__).with_name('inputs').glob("*.jpg") ]
+output_path = Path(os.environ.get(
+    "OUTPUT_DIRECTORY",
+    str(Path(__file__).with_name('outputs') / 'tf_serving')
+))
 
-for i in images:
 
-    input_path = Path(i)
+images = list(Path(__file__).with_name('inputs').glob("*.jpg"))
 
-    image = cv2.imread(i)
+for input_path in images:
+
+    image = cv2.imread(str(input_path))
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     resized = cv2.resize(image, (width , height))
     rgb_tensor = tf.convert_to_tensor(resized, dtype=tf.uint8)
@@ -37,11 +42,15 @@ for i in images:
         headers=headers
     )
 
-    outputs = json.loads(json_response.text)['predictions']
+    results = json.loads(json_response.text)['predictions']
 
-    for o in outputs:
+    h, w, _ = image.shape
 
-        output_file = input_path.parent.with_name('outputs') / 'tf_serving' / input_path.name
+    for o in results:
+        # If any score is above threshold, flag it as detected
+        detected = False
+
+        output_file = output_path / input_path.name
 
         boxes = o['output_0']
         boxes = np.asarray(boxes).astype('int')
@@ -49,22 +58,20 @@ for i in images:
         scores = o['output_1']
         scores = np.asarray(scores)
 
-        classes = o['output_2']
-        classes = np.asarray(classes)
 
-        for score, klass, (ymin,xmin,ymax,xmax) in zip(scores, classes, boxes):
+        for score, (ymin, xmin, ymax, xmax) in zip(scores, boxes):
 
             if score < threshold:
                 continue
 
-            h, w, _ = image.shape
+            detected = True
 
             y_min = int(max(1, (ymin * (h / height))))
             x_min = int(max(1, (xmin * (w / width))))
             y_max = int(min(h, (ymax * (h / height))))
             x_max = int(min(w, (xmax * (w / width))))
 
-            img_boxes = cv2.rectangle(
+            cv2.rectangle(
                 image,
                 (x_min, y_max),
                 (x_max, y_min),
@@ -75,7 +82,7 @@ for i in images:
             score = round(100 * score, 0)
             label = f"Seal::{score}%"
             cv2.putText(
-                img_boxes,
+                image,
                 label,
                 (x_min, y_max + 50),
                 font,
@@ -85,4 +92,6 @@ for i in images:
                 cv2.LINE_AA
             )
 
-            cv2.imwrite(str(output_file), img_boxes)
+        if detected is True:
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            cv2.imwrite(str(output_file), image)

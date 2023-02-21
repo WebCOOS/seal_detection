@@ -57,18 +57,22 @@ def process_image(tf_model, model: str, version: str, name: str, bytedata: bytes
     boxes, scores, classes, num_detections = tf_model(rgb_tensor)
 
     output_file = output_path / model / str(version) / name
-    output_file.parent.mkdir(parents=True, exist_ok=True)
 
     h, w, _ = image.shape
 
     boxes = boxes.numpy()[0].astype('int')
     scores = scores.numpy()[0]
 
+    # If any score is above threshold, flag it as detected
+    detected = False
+
     # Draw the results if they are above a defined threshold
-    for score, (ymin,xmin,ymax,xmax) in zip(scores, boxes):
+    for score, (ymin, xmin, ymax, xmax) in zip(scores, boxes):
 
         if score < threshold:
             continue
+
+        detected = True
 
         y_min = int(max(1, (ymin * (h / height))))
         x_min = int(max(1, (xmin * (w / width))))
@@ -96,8 +100,12 @@ def process_image(tf_model, model: str, version: str, name: str, bytedata: bytes
             cv2.LINE_AA
         )
 
-    cv2.imwrite(str(output_file), image)
-    return str(output_file)
+    if detected is True:
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        cv2.imwrite(str(output_file), image)
+        return str(output_file)
+
+    return None
 
 
 @app.post("/{model}/{version}/upload")
