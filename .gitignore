@@ -1,0 +1,3 @@
+*.pyc
+outputs/
+docker_outputs/
