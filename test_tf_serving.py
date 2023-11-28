@@ -58,7 +58,6 @@ for input_path in images:
         scores = o['output_1']
         scores = np.asarray(scores)
 
-
         for score, (ymin, xmin, ymax, xmax) in zip(scores, boxes):
 
             if score < threshold:

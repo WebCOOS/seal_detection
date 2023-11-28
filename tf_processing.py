@@ -11,7 +11,6 @@ threshold = 0.5
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 
-
 MODEL_FOLDER = Path(os.environ.get(
     "MODEL_DIRECTORY",
     str(Path(__file__).parent)
