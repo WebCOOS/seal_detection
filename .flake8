@@ -9,4 +9,5 @@ exclude =
     *.ipynb_checkpoints/*
     resource/
     stream_effdet*.py
+    stream_yolo*.py
     test_*.py
