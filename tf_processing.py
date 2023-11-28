@@ -18,8 +18,8 @@ MODEL_FOLDER = Path(os.environ.get(
 
 TF_MODELS = {
     "seal_detector": {
-        "2": tf.saved_model.load(str(MODEL_FOLDER / "seal_detector" / "2")),
-        "3": tf.saved_model.load(str(MODEL_FOLDER / "seal_detector" / "3")),
+        "2": tf.saved_model.load(str(MODEL_FOLDER / "tf" / "seal_detector" / "2")),
+        "3": tf.saved_model.load(str(MODEL_FOLDER / "tf" / "seal_detector" / "3")),
     }
 }
 
