@@ -3,11 +3,14 @@ from typing import Any
 from pathlib import Path
 
 import cv2
+
 import requests
 import numpy as np
 import tensorflow as tf
 from pydantic import BaseModel
 from fastapi import FastAPI, Depends, UploadFile
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
@@ -107,6 +110,12 @@ def process_image(tf_model, model: str, version: str, name: str, bytedata: bytes
 
     return None
 
+# Mounting the 'static' output files for the app
+app.mount(
+    "/outputs",
+    StaticFiles(directory=output_path),
+    name="outputs"
+)
 
 @app.get("/", include_in_schema=False)
 async def index():
@@ -123,7 +132,14 @@ def from_upload(
 ):
     bytedata = file.file.read()
     proc = process_image(tf, model, version, file.filename, bytedata)
-    return { "path": proc }
+
+    rel_path = os.path.relpath( proc, output_path )
+
+    url_for_output = app.url_path_for(
+        'outputs', path=rel_path
+    )
+
+    return { "url": url_for_output }
 
 
 @app.post("/{model}/{version}/url")
