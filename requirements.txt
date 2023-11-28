@@ -1,7 +1,0 @@
-fastapi
-numpy
-opencv
-python-multipart
-tensorflow
-uvicorn
-python=3.9

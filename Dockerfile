@@ -21,8 +21,10 @@ RUN apt-get update && apt-get install -y \
     mkdir ${OUTPUT_DIRECTORY} && \
     chown mambauser:mambauser ${OUTPUT_DIRECTORY}
 
-COPY --chown=mambauser:mambauser requirements.txt /tmp/requirements.txt
-RUN micromamba install -c conda-forge --name base --yes --file /tmp/requirements.txt && \
+COPY --chown=mambauser:mambauser environment.yml /tmp/environment.yml
+RUN --mount=type=cache,id=webcoos_seal_detector,target=/opt/conda/pkgs \
+    --mount=type=cache,id=webcoos_seal_detector,target=/root/.cache/pip \
+    micromamba install -c conda-forge --name base --yes --file /tmp/environment.yml && \
     micromamba clean --all --yes
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
@@ -30,8 +32,8 @@ ENV PATH "$MAMBA_ROOT_PREFIX/bin:$PATH"
 
 # Copy scripts
 COPY --chown=mambauser:mambauser api.py /app/api.py
+# Copy models
 COPY --chown=mambauser:mambauser seal_detector /models/seal_detector
 
 WORKDIR /app
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
-

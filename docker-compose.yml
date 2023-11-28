@@ -1,0 +1,13 @@
+services:
+  api:
+    image: webcoos-seal-detection:latest
+    build:
+      context:      .
+      dockerfile:   Dockerfile
+    ports:
+     - 8000:8000
+    tmpfs:
+     - "/outputs"
+    environment:
+     - OUTPUT_DIRECTORY=/outputs
+    command: uvicorn api:app --host 0.0.0.0 --port 8000
