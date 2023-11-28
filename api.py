@@ -108,6 +108,12 @@ def process_image(tf_model, model: str, version: str, name: str, bytedata: bytes
     return None
 
 
+@app.get("/", include_in_schema=False)
+async def index():
+    """Convenience redirect to OpenAPI spec UI for service."""
+    return RedirectResponse("/docs")
+
+
 @app.post("/{model}/{version}/upload")
 def from_upload(
     model: str,
