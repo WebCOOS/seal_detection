@@ -84,37 +84,37 @@ def from_upload(
     return { "url": url_path_for_output }
 
 
-@app.post(
-    f"{TF_ENDPOINT_PREFIX}/{{model}}/{{version}}/url",
-    tags=['tensorflow']
-)
-def from_url(
-    model: str,
-    version: str,
-    params: UrlParams,
-    tf: Any = Depends(get_tf_model),
-):
-    bytedata = requests.get(params.url).content
-    name = Path(params.url).name
-    res = tf_process_image(
-        tf,
-        output_path,
-        model,
-        version,
-        name,
-        bytedata
-    )
+# @app.post(
+#     f"{TF_ENDPOINT_PREFIX}/{{model}}/{{version}}/url",
+#     tags=['tensorflow']
+# )
+# def from_url(
+#     model: str,
+#     version: str,
+#     params: UrlParams,
+#     tf: Any = Depends(get_tf_model),
+# ):
+#     bytedata = requests.get(params.url).content
+#     name = Path(params.url).name
+#     res = tf_process_image(
+#         tf,
+#         output_path,
+#         model,
+#         version,
+#         name,
+#         bytedata
+#     )
 
-    if( res is None ):
-        return { "url": None }
+#     if( res is None ):
+#         return { "url": None }
 
-    rel_path = os.path.relpath( res, output_path )
+#     rel_path = os.path.relpath( res, output_path )
 
-    url_path_for_output = app.url_path_for(
-        'outputs', path=rel_path
-    )
+#     url_path_for_output = app.url_path_for(
+#         'outputs', path=rel_path
+#     )
 
-    return { "url": url_path_for_output }
+#     return { "url": url_path_for_output }
 
 
 # YOLO / best_seal.pt endpoints
@@ -150,37 +150,37 @@ def from_upload(
     return { "url": url_path_for_output }
 
 
-@app.post(
-    f"{YOLO_ENDPOINT_PREFIX}/{{model}}/{{version}}/url",
-    tags=['yolo']
-)
-def from_url(
-    model: str,
-    version: str,
-    params: UrlParams,
-    yolo: Any = Depends(get_yolo_model),
-):
-    bytedata = requests.get(params.url).content
-    name = Path(params.url).name
-    res = yolo_process_image(
-        yolo,
-        output_path,
-        model,
-        version,
-        name,
-        bytedata
-    )
+# @app.post(
+#     f"{YOLO_ENDPOINT_PREFIX}/{{model}}/{{version}}/url",
+#     tags=['yolo']
+# )
+# def from_url(
+#     model: str,
+#     version: str,
+#     params: UrlParams,
+#     yolo: Any = Depends(get_yolo_model),
+# ):
+#     bytedata = requests.get(params.url).content
+#     name = Path(params.url).name
+#     res = yolo_process_image(
+#         yolo,
+#         output_path,
+#         model,
+#         version,
+#         name,
+#         bytedata
+#     )
 
-    if( res is None ):
-        return { "url": None }
+#     if( res is None ):
+#         return { "url": None }
 
-    rel_path = os.path.relpath( res, output_path )
+#     rel_path = os.path.relpath( res, output_path )
 
-    url_path_for_output = app.url_path_for(
-        'outputs', path=rel_path
-    )
+#     url_path_for_output = app.url_path_for(
+#         'outputs', path=rel_path
+#     )
 
-    return { "url": url_path_for_output }
+#     return { "url": url_path_for_output }
 
 
 @app.post("/health")
