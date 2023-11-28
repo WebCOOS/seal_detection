@@ -16,3 +16,5 @@ dependencies:
   - tensorflow
   - torchvision
   - ultralytics
+  # Testing related
+  - flake8>=3.7.9
