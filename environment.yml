@@ -9,6 +9,7 @@ dependencies:
   - fastapi
   - python-multipart
   - uvicorn
+  - filetype
   # Model/ML-related
   - numpy
   - opencv

@@ -31,7 +31,7 @@ ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ENV PATH "$MAMBA_ROOT_PREFIX/bin:$PATH"
 
 # Copy scripts
-COPY --chown=mambauser:mambauser api.py tf_processing.py yolo_processing.py /app/
+COPY --chown=mambauser:mambauser api.py tf_processing.py yolo_processing.py namify.py /app/
 
 # Copy models
 COPY --chown=mambauser:mambauser models /models/

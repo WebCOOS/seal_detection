@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from tf_processing import tf_process_image, TF_MODELS
 from yolo_processing import yolo_process_image, YOLO_MODELS
+from namify import namify_for_content
 import logging
 
 logger = logging.getLogger( __name__ )
@@ -22,6 +23,10 @@ class UrlParams(BaseModel):
 
 TF_ENDPOINT_PREFIX = "/tf"
 YOLO_ENDPOINT_PREFIX = "/yolo"
+ALLOWED_IMAGE_EXTENSIONS = (
+    "jpg",
+    "png"
+)
 
 output_path = Path(os.environ.get(
     "OUTPUT_DIRECTORY",
@@ -56,19 +61,25 @@ async def index():
     f"{TF_ENDPOINT_PREFIX}/{{model}}/{{version}}/upload",
     tags=['tensorflow']
 )
-def from_upload(
+def tf_from_upload(
     model: str,
     version: str,
     file: UploadFile,
     tf: Any = Depends(get_tf_model),
 ):
     bytedata = file.file.read()
+
+    ( name, ext ) = namify_for_content( bytedata )
+
+    assert ext in ALLOWED_IMAGE_EXTENSIONS, \
+        f"{ext} not in allowed image file types: {repr(ALLOWED_IMAGE_EXTENSIONS)}"
+
     res = tf_process_image(
         tf,
         output_path,
         model,
         version,
-        file.filename,
+        name,
         bytedata
     )
 
@@ -122,19 +133,25 @@ def from_upload(
     f"{YOLO_ENDPOINT_PREFIX}/{{model}}/{{version}}/upload",
     tags=['yolo']
 )
-def from_upload(
+def yolo_from_upload(
     model: str,
     version: str,
     file: UploadFile,
     yolo: Any = Depends(get_yolo_model),
 ):
     bytedata = file.file.read()
+
+    ( name, ext ) = namify_for_content( bytedata )
+
+    assert ext in ALLOWED_IMAGE_EXTENSIONS, \
+        f"{ext} not in allowed image file types: {repr(ALLOWED_IMAGE_EXTENSIONS)}"
+
     res = yolo_process_image(
         yolo,
         output_path,
         model,
         version,
-        file.filename,
+        name,
         bytedata
     )
 
