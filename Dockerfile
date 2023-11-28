@@ -34,7 +34,7 @@ ENV PATH "$MAMBA_ROOT_PREFIX/bin:$PATH"
 COPY --chown=mambauser:mambauser api.py tf_processing.py yolo_processing.py /app/
 
 # Copy models
-COPY --chown=mambauser:mambauser seal_detector /models/seal_detector
+COPY --chown=mambauser:mambauser models /models/
 
 WORKDIR /app
 CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
