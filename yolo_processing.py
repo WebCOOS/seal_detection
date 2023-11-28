@@ -7,12 +7,9 @@ from pathlib import Path
 import logging
 
 logger = logging.getLogger( __name__ )
-
-
-
 width = 896
 height = 896
-threshold = 0.5
+threshold = 0.2
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 MODEL_FOLDER = Path(os.environ.get(
@@ -52,6 +49,7 @@ def yolo_process_image(
 
     npdata = np.asarray(bytearray(bytedata), dtype="uint8")
     frame = cv2.imdecode(npdata, cv2.IMREAD_COLOR)
+    # frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
     img_boxes = frame
 
