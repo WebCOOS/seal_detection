@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Depends, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from tf_processing import tf_process_image
+from tf_processing import tf_process_image, TF_MODELS
 
 
 app = FastAPI()
@@ -25,21 +25,10 @@ output_path = Path(os.environ.get(
     str(Path(__file__).with_name('outputs') / 'fastapi')
 ))
 
-model_folder = Path(os.environ.get(
-    "MODEL_DIRECTORY",
-    str(Path(__file__).parent)
-))
-
-models = {
-    "seal_detector": {
-        "2": tf.saved_model.load(str(model_folder / "seal_detector" / "2")),
-        "3": tf.saved_model.load(str(model_folder / "seal_detector" / "3")),
-    }
-}
 
 
-def get_model(model: str, version: str):
-    return models[model][version]
+def get_tf_model(model: str, version: str):
+    return TF_MODELS[model][version]
 
 
 # Mounting the 'static' output files for the app
@@ -64,7 +53,7 @@ def from_upload(
     model: str,
     version: str,
     file: UploadFile,
-    tf: Any = Depends(get_model),
+    tf: Any = Depends(get_tf_model),
 ):
     bytedata = file.file.read()
     res = tf_process_image(
@@ -96,7 +85,7 @@ def from_url(
     model: str,
     version: str,
     params: UrlParams,
-    tf: Any = Depends(get_model),
+    tf: Any = Depends(get_tf_model),
 ):
     bytedata = requests.get(params.url).content
     name = Path(params.url).name

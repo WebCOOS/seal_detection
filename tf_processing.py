@@ -1,3 +1,4 @@
+import os
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -8,6 +9,20 @@ width = 896
 height = 896
 threshold = 0.5
 font = cv2.FONT_HERSHEY_SIMPLEX
+
+
+
+MODEL_FOLDER = Path(os.environ.get(
+    "MODEL_DIRECTORY",
+    str(Path(__file__).parent)
+))
+
+TF_MODELS = {
+    "seal_detector": {
+        "2": tf.saved_model.load(str(MODEL_FOLDER / "seal_detector" / "2")),
+        "3": tf.saved_model.load(str(MODEL_FOLDER / "seal_detector" / "3")),
+    }
+}
 
 
 def tf_process_image(
