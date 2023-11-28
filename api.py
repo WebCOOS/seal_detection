@@ -8,6 +8,9 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from tf_processing import tf_process_image, TF_MODELS
 from yolo_processing import yolo_process_image, YOLO_MODELS
+import logging
+
+logger = logging.getLogger( __name__ )
 
 
 app = FastAPI()

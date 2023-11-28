@@ -3,6 +3,10 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
+import logging
+
+logger = logging.getLogger( __name__ )
+
 
 
 width = 896
