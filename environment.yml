@@ -7,6 +7,7 @@ dependencies:
   - python=3.9
   # API-related
   - fastapi
+  - gunicorn
   - python-multipart
   - uvicorn
   - filetype

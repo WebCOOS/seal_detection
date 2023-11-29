@@ -33,8 +33,11 @@ ENV PATH "$MAMBA_ROOT_PREFIX/bin:$PATH"
 # Copy Python app files
 COPY --chown=mambauser:mambauser *.py /app/
 
+# Copy container-specific configuration
+COPY --chown=mambauser:mambauser docker /docker/
+
 # Copy models
 COPY --chown=mambauser:mambauser models /models/
 
 WORKDIR /app
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["gunicorn", "api:app", "--config", "/docker/api/gunicorn.conf.py"]

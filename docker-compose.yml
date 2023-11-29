@@ -10,4 +10,9 @@ services:
      - "/outputs"
     environment:
      - OUTPUT_DIRECTORY=/outputs
-    command: uvicorn api:app --host 0.0.0.0 --port 8000
+    command: >
+      gunicorn api:app
+        --bind "0.0.0.0:8000"
+        --timeout 240
+        -w 1 --max-requests 100
+        -k uvicorn.workers.UvicornWorker
