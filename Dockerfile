@@ -30,8 +30,8 @@ RUN --mount=type=cache,id=webcoos_seal_detector,target=/opt/conda/pkgs \
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ENV PATH "$MAMBA_ROOT_PREFIX/bin:$PATH"
 
-# Copy scripts
-COPY --chown=mambauser:mambauser api.py tf_processing.py yolo_processing.py namify.py /app/
+# Copy Python app files
+COPY --chown=mambauser:mambauser *.py /app/
 
 # Copy models
 COPY --chown=mambauser:mambauser models /models/
