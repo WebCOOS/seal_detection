@@ -32,7 +32,7 @@ uvicorn api:app
 The server can be tested with the `test_api.py` file. It will save images to the `output` folder based on the `model` and `version` requested.
 
 ```shell
-python test_api.py
+python ./test/test_api.py
 ```
 
 The FastAPI server can also be served using Docker:
@@ -45,7 +45,7 @@ docker run --gpus all --rm --name seal_detector -v $(pwd)/outputs/docker:/output
 And then tested the same as running it outside of Docker
 
 ```shell
-python test_api.py
+python ./test/test_api.py
 ```
 
 ## Tensorflow Serving
@@ -67,16 +67,16 @@ The HTTP endpoint can then be used to pass in JSON image data and write out resu
 
 ## Stream Processing
 
-The model can also be applied to a live stream using one of the `stream_*.py` files.
+The model can also be applied to a live stream using one of the `test/stream_*.py` files.
 
 Run model version 2
 
 ```shell
-python stream_effdet2.py
+python ./test/stream_effdet2.py
 ```
 
 Run model version 3
 
 ```shell
-python stream_effdet3.py
+python ./test/stream_effdet3.py
 ```
