@@ -1,5 +1,5 @@
 import os
-import requests
+# import requests
 from typing import Any
 from pathlib import Path
 from pydantic import BaseModel
@@ -9,6 +9,12 @@ from fastapi.staticfiles import StaticFiles
 from tf_processing import tf_process_image, TF_MODELS
 from yolo_processing import yolo_process_image, YOLO_MODELS
 from namify import namify_for_content
+from model_version import (
+    TFModelName,
+    TFModelVersion,
+    YOLOModelName,
+    YOLOModelVersion
+)
 import logging
 
 logger = logging.getLogger( __name__ )
@@ -59,14 +65,16 @@ async def index():
 # Tensorflow / EffDet model endpoints
 @app.post(
     f"{TF_ENDPOINT_PREFIX}/{{model}}/{{version}}/upload",
-    tags=['tensorflow']
+    tags=['tensorflow'],
+    summary="Tensorflow/EffDet model prediction on image upload"
 )
 def tf_from_upload(
-    model: str,
-    version: str,
+    model: TFModelName,
+    version: TFModelVersion,
     file: UploadFile,
     tf: Any = Depends(get_tf_model),
 ):
+    """Perform model prediction based on selected Tensorflow model / version."""
     bytedata = file.file.read()
 
     ( name, ext ) = namify_for_content( bytedata )
@@ -74,7 +82,7 @@ def tf_from_upload(
     assert ext in ALLOWED_IMAGE_EXTENSIONS, \
         f"{ext} not in allowed image file types: {repr(ALLOWED_IMAGE_EXTENSIONS)}"
 
-    res = tf_process_image(
+    ( res_path, classification_result) = tf_process_image(
         tf,
         output_path,
         model,
@@ -83,16 +91,22 @@ def tf_from_upload(
         bytedata
     )
 
-    if( res is None ):
-        return { "url": None }
+    if( res_path is None ):
+        return {
+            "url": None,
+            "classification_result": classification_result
+        }
 
-    rel_path = os.path.relpath( res, output_path )
+    rel_path = os.path.relpath( res_path, output_path )
 
     url_path_for_output = app.url_path_for(
         'outputs', path=rel_path
     )
 
-    return { "url": url_path_for_output }
+    return {
+        "url": url_path_for_output,
+        "classification_result": classification_result
+    }
 
 
 # @app.post(
@@ -131,14 +145,16 @@ def tf_from_upload(
 # YOLO / best_seal.pt endpoints
 @app.post(
     f"{YOLO_ENDPOINT_PREFIX}/{{model}}/{{version}}/upload",
-    tags=['yolo']
+    tags=['yolo'],
+    summary="Ultralytics/YOLOv8 model prediction on image upload",
 )
 def yolo_from_upload(
-    model: str,
-    version: str,
+    model: YOLOModelName,
+    version: YOLOModelVersion,
     file: UploadFile,
     yolo: Any = Depends(get_yolo_model),
 ):
+    """Perform model prediction based on selected YOLOv8 model / version."""
     bytedata = file.file.read()
 
     ( name, ext ) = namify_for_content( bytedata )
@@ -146,7 +162,7 @@ def yolo_from_upload(
     assert ext in ALLOWED_IMAGE_EXTENSIONS, \
         f"{ext} not in allowed image file types: {repr(ALLOWED_IMAGE_EXTENSIONS)}"
 
-    res = yolo_process_image(
+    ( res_path, classification_result) = yolo_process_image(
         yolo,
         output_path,
         model,
@@ -155,17 +171,22 @@ def yolo_from_upload(
         bytedata
     )
 
-    if( res is None ):
-        return { "url": None }
+    if( res_path is None ):
+        return {
+            "url": None,
+            "classification_result": classification_result
+        }
 
-    rel_path = os.path.relpath( res, output_path )
+    rel_path = os.path.relpath( res_path, output_path )
 
     url_path_for_output = app.url_path_for(
         'outputs', path=rel_path
     )
 
-    return { "url": url_path_for_output }
-
+    return {
+        "url": url_path_for_output,
+        "classification_result": classification_result
+    }
 
 # @app.post(
 #     f"{YOLO_ENDPOINT_PREFIX}/{{model}}/{{version}}/url",

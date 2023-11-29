@@ -1,9 +1,11 @@
 import os
-from typing import List, Set
+from typing import Union
 import cv2
 import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
+from score import ClassificationModelResult, BoundingBoxPoint
+from model_version import YOLOModelName, YOLOModelVersion
 import logging
 
 logger = logging.getLogger( __name__ )
@@ -23,12 +25,14 @@ YOLO_MODELS = {
     }
 }
 
+SEAL_CLASSIFICATION = 0.0
+
 
 def yolo_process_image(
     yolo_model: YOLO,
     output_path: Path,
-    model: str,
-    version: str,
+    model: Union[YOLOModelName, str],
+    version: Union[YOLOModelVersion, str],
     name: str,
     bytedata: bytes
 ):
@@ -45,6 +49,17 @@ def yolo_process_image(
             "and be a directory"
         )
 
+    assert isinstance( model, ( YOLOModelName, str ) )
+    assert isinstance( version, ( YOLOModelVersion, str ) )
+
+    if( isinstance( model, YOLOModelName ) ):
+        model = model.value
+
+    if( isinstance( version, YOLOModelVersion ) ):
+        version = version.value
+
+    ret: ClassificationModelResult = ClassificationModelResult()
+
     output_file = output_path / model / str(version) / name
 
     npdata = np.asarray(bytearray(bytedata), dtype="uint8")
@@ -58,14 +73,9 @@ def yolo_process_image(
 
     # If any score is above threshold, flag it as detected
     detected = False
-    scores: List[float] = []
-    classes: Set[float] = set()
 
     for result in results:
         for score, cls, bbox in zip(result.boxes.conf, result.boxes.cls, result.boxes.xyxy):
-
-            scores.append( score.item() )
-            classes.add( cls.item() )
 
             if score < threshold:
                 continue
@@ -80,25 +90,30 @@ def yolo_process_image(
             y_max = int(min(h, y2))
             x_max = int(min(w, x2))
 
-            #label = "Seal" + ": " + ": {:.2f}%".format(score * 100)
-
-            if cls.item() == 0.0:
-                label = "Rock" + ": " + ": {:.2f}%".format(score * 100)
-                img_boxes = cv2.rectangle(img_boxes, (x_min, y_max), (x_max, y_min), (0, 255, 0), 2)
-                cv2.putText(img_boxes, label, (x_min, y_max - 10), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
-            if cls.item() == 1.0:
+            if cls.item() == SEAL_CLASSIFICATION:
                 label = "Seal" + ": " + ": {:.2f}%".format(score * 100)
                 img_boxes = cv2.rectangle(img_boxes, (x_min, y_max), (x_max, y_min), (0, 0, 255), 2)
                 cv2.putText(img_boxes, label, (x_min, y_max - 10), font, 0.5, (0, 0, 255), 1, cv2.LINE_AA)
 
-    outp = cv2.resize(img_boxes, (1280, 720))
+                ret.add(
+                    classification_name="seal",
+                    classification_score=score.item(),
+                    bbox=(
+                        BoundingBoxPoint( x_min, y_min ),
+                        BoundingBoxPoint( x_max, y_max ),
+                    )
+                )
+            else:
+                raise Exception(
+                    f"Classification {cls.item()} not handled, model names "
+                    f"are: {repr(yolo_model.names)}"
+                )
 
-    logger.warning( f"Scores: {repr( scores )}" )
-    logger.warning( f"Classes: {repr( classes )}" )
+    # outp = cv2.resize(img_boxes, (1280, 720))
 
     if detected is True:
         output_file.parent.mkdir(parents=True, exist_ok=True)
-        cv2.imwrite(str(output_file), outp )
-        return str(output_file)
+        cv2.imwrite(str(output_file), img_boxes )
+        return ( str(output_file), ret )
 
-    return None
+    return ( None, ret  )

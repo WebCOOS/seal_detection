@@ -1,8 +1,14 @@
 import os
+from typing import Union
 import cv2
 import numpy as np
 import tensorflow as tf
 from pathlib import Path
+from score import ClassificationModelResult, BoundingBoxPoint
+from model_version import TFModelName, TFModelVersion
+import logging
+
+logger = logging.getLogger( __name__ )
 
 
 width = 896
@@ -27,11 +33,11 @@ TF_MODELS = {
 def tf_process_image(
     tf_model,
     output_path: Path,
-    model: str,
-    version: str,
+    model: Union[TFModelName, str],
+    version: Union[TFModelVersion, str],
     name: str,
     bytedata: bytes
-):
+) -> tuple[str, ClassificationModelResult]:
 
     assert tf_model, \
         f"Must have tf_model passed to {tf_process_image.__name__}"
@@ -45,9 +51,20 @@ def tf_process_image(
             "and be a directory"
         )
 
+    assert isinstance( model, ( TFModelName, str ) )
+    assert isinstance( version, ( TFModelVersion, str ) )
+
+    if( isinstance( model, TFModelName ) ):
+        model = model.value
+
+    if( isinstance( version, TFModelVersion ) ):
+        version = version.value
+
+    ret: ClassificationModelResult = ClassificationModelResult()
+
     npdata = np.asarray(bytearray(bytedata), dtype="uint8")
     image = cv2.imdecode(npdata, cv2.IMREAD_COLOR)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     resized = cv2.resize(image, (width , height))
     rgb_tensor = tf.convert_to_tensor(resized, dtype=tf.uint8)
     rgb_tensor = tf.expand_dims(rgb_tensor, 0)
@@ -78,6 +95,15 @@ def tf_process_image(
         y_max = int(min(h, (ymax * (h / height))))
         x_max = int(min(w, (xmax * (w / width))))
 
+        ret.add(
+            classification_name="seal",
+            classification_score=score,
+            bbox=(
+                BoundingBoxPoint( x_min, y_min ),
+                BoundingBoxPoint( x_max, y_max ),
+            )
+        )
+
         cv2.rectangle(
             image,
             (x_min, y_max),
@@ -102,6 +128,6 @@ def tf_process_image(
     if detected is True:
         output_file.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(output_file), image)
-        return str(output_file)
+        return ( str(output_file), ret )
 
-    return None
+    return ( None, ret )
