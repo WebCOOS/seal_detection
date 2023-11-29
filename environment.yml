@@ -18,5 +18,7 @@ dependencies:
   - tensorflow
   - torchvision
   - ultralytics
+  # For managing large git files
+  - git-lfs
   # Testing related
   - flake8>=3.7.9
