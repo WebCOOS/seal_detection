@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger( __name__ )
 width = 896
 height = 896
-threshold = 0.2
+threshold = 0.5
 font = cv2.FONT_HERSHEY_SIMPLEX
 
 MODEL_FOLDER = Path(os.environ.get(
