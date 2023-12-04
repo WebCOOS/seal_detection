@@ -5,7 +5,8 @@ import numpy as np
 import tensorflow as tf
 from pathlib import Path
 from score import ClassificationModelResult, BoundingBoxPoint
-from model_version import TFModelName, TFModelVersion
+from model_version import ModelFramework, TFModelName, TFModelVersion
+from metrics import increment_seal_counter
 import logging
 
 logger = logging.getLogger( __name__ )
@@ -126,6 +127,14 @@ def tf_process_image(
         )
 
     if detected is True:
+
+        # Update metrics
+        increment_seal_counter(
+            ModelFramework.TF.name,
+            model,
+            version
+        )
+
         output_file.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(output_file), image)
         return ( str(output_file), ret )

@@ -11,6 +11,7 @@ dependencies:
   - python-multipart
   - uvicorn
   - filetype
+  - prometheus_client
   # Model/ML-related
   - numpy
   - opencv

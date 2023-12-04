@@ -5,7 +5,8 @@ import numpy as np
 from ultralytics import YOLO
 from pathlib import Path
 from score import ClassificationModelResult, BoundingBoxPoint
-from model_version import YOLOModelName, YOLOModelVersion
+from model_version import ModelFramework, YOLOModelName, YOLOModelVersion
+from metrics import increment_seal_counter
 import logging
 
 logger = logging.getLogger( __name__ )
@@ -112,6 +113,14 @@ def yolo_process_image(
     # outp = cv2.resize(img_boxes, (1280, 720))
 
     if detected is True:
+
+        # Update Prometheus metrics
+        increment_seal_counter(
+            ModelFramework.YOLO.name,
+            model,
+            version
+        )
+
         output_file.parent.mkdir(parents=True, exist_ok=True)
         cv2.imwrite(str(output_file), img_boxes )
         return ( str(output_file), ret )

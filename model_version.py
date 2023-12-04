@@ -1,6 +1,11 @@
 from enum import Enum
 
 
+class ModelFramework(str, Enum):
+    TF = "TF"
+    YOLO = "YOLO"
+
+
 class TFModelName(str, Enum):
     seal_detector = "seal_detector"
 

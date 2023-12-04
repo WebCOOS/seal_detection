@@ -8,6 +8,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from tf_processing import tf_process_image, TF_MODELS
 from yolo_processing import yolo_process_image, YOLO_MODELS
+from metrics import make_metrics_app
 from namify import namify_for_content
 from model_version import (
     TFModelName,
@@ -21,6 +22,9 @@ logger = logging.getLogger( __name__ )
 
 
 app = FastAPI()
+# Prometheus metrics
+metrics_app = make_metrics_app()
+app.mount("/metrics", metrics_app)
 
 
 class UrlParams(BaseModel):

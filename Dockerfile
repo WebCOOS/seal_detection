@@ -5,6 +5,8 @@ ENV MODEL_DIRECTORY /models
 ENV OUTPUT_DIRECTORY /outputs
 ENV APP_DIRECTORY /app
 
+ENV PROMETHEUS_MULTIPROC_DIR /tmp/metrics
+
 USER root
 
 RUN apt-get update && apt-get install -y \
@@ -19,7 +21,10 @@ RUN apt-get update && apt-get install -y \
     mkdir ${APP_DIRECTORY} && \
     chown mambauser:mambauser ${APP_DIRECTORY} && \
     mkdir ${OUTPUT_DIRECTORY} && \
-    chown mambauser:mambauser ${OUTPUT_DIRECTORY}
+    chown mambauser:mambauser ${OUTPUT_DIRECTORY} && \
+    mkdir ${PROMETHEUS_MULTIPROC_DIR} && \
+    chown mambauser:mambauser ${PROMETHEUS_MULTIPROC_DIR}
+
 
 COPY --chown=mambauser:mambauser environment.yml /tmp/environment.yml
 RUN --mount=type=cache,id=webcoos_seal_detector,target=/opt/conda/pkgs \
