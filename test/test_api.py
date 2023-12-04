@@ -10,7 +10,7 @@ for v in versions:
 
     # URL endopint
     json_response = requests.post(
-        f'http://localhost:8000/seal_detector/{v}/url',
+        f'http://localhost:8000/tf/seal_detector/{v}/url',
         headers={
             "content-type": "application/json"
         },
@@ -22,7 +22,7 @@ for v in versions:
     # Image upload endpoint
     with open('inputs/seal-01.jpg', 'rb') as f:
         json_response = requests.post(
-            f'http://localhost:8000/seal_detector/{v}/upload',
+            f'http://localhost:8000/tf/seal_detector/{v}/upload',
             files={
                 'file': ('seal-01.jpg', f)
             }

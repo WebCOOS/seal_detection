@@ -1,0 +1,18 @@
+services:
+  api:
+    image: webcoos-seal-detection:latest
+    build:
+      context:      .
+      dockerfile:   Dockerfile
+    ports:
+     - 8000:8000
+    tmpfs:
+     - "/outputs"
+    environment:
+     - OUTPUT_DIRECTORY=/outputs
+    command: >
+      gunicorn api:app
+        --bind "0.0.0.0:8000"
+        --timeout 240
+        -w 1 --max-requests 100
+        -k uvicorn.workers.UvicornWorker

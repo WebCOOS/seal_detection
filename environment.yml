@@ -1,0 +1,25 @@
+name: webcoos_seal_detection
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Python
+  - python=3.9
+  # API-related
+  - fastapi
+  - gunicorn
+  - python-multipart
+  - uvicorn
+  - filetype
+  - prometheus_client
+  # Model/ML-related
+  - numpy
+  - opencv
+  - pytorch>=1.8
+  - tensorflow
+  - torchvision
+  - ultralytics
+  # For managing large git files
+  - git-lfs
+  # Testing related
+  - flake8>=3.7.9

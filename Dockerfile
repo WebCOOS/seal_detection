@@ -5,6 +5,8 @@ ENV MODEL_DIRECTORY /models
 ENV OUTPUT_DIRECTORY /outputs
 ENV APP_DIRECTORY /app
 
+ENV PROMETHEUS_MULTIPROC_DIR /tmp/metrics
+
 USER root
 
 RUN apt-get update && apt-get install -y \
@@ -19,19 +21,28 @@ RUN apt-get update && apt-get install -y \
     mkdir ${APP_DIRECTORY} && \
     chown mambauser:mambauser ${APP_DIRECTORY} && \
     mkdir ${OUTPUT_DIRECTORY} && \
-    chown mambauser:mambauser ${OUTPUT_DIRECTORY}
+    chown mambauser:mambauser ${OUTPUT_DIRECTORY} && \
+    mkdir ${PROMETHEUS_MULTIPROC_DIR} && \
+    chown mambauser:mambauser ${PROMETHEUS_MULTIPROC_DIR}
 
-COPY --chown=mambauser:mambauser requirements.txt /tmp/requirements.txt
-RUN micromamba install -c conda-forge --name base --yes --file /tmp/requirements.txt && \
+
+COPY --chown=mambauser:mambauser environment.yml /tmp/environment.yml
+RUN --mount=type=cache,id=webcoos_seal_detector,target=/opt/conda/pkgs \
+    --mount=type=cache,id=webcoos_seal_detector,target=/root/.cache/pip \
+    micromamba install -c conda-forge --name base --yes --file /tmp/environment.yml && \
     micromamba clean --all --yes
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 ENV PATH "$MAMBA_ROOT_PREFIX/bin:$PATH"
 
-# Copy scripts
-COPY --chown=mambauser:mambauser api.py /app/api.py
-COPY --chown=mambauser:mambauser seal_detector /models/seal_detector
+# Copy Python app files
+COPY --chown=mambauser:mambauser *.py /app/
+
+# Copy container-specific configuration
+COPY --chown=mambauser:mambauser docker /docker/
+
+# Copy models
+COPY --chown=mambauser:mambauser models /models/
 
 WORKDIR /app
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
-
+CMD ["gunicorn", "api:app", "--config", "/docker/api/gunicorn.conf.py"]
