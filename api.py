@@ -10,6 +10,7 @@ from tf_processing import tf_process_image, TF_MODELS
 from yolo_processing import yolo_process_image, YOLO_MODELS
 from metrics import make_metrics_app
 from namify import namify_for_content
+from score import ClassificationModelResult
 from model_version import (
     TFModelName,
     TFModelVersion,
@@ -17,6 +18,7 @@ from model_version import (
     YOLOModelVersion
 )
 import logging
+from datetime import datetime, timezone
 
 logger = logging.getLogger( __name__ )
 
@@ -60,6 +62,21 @@ app.mount(
 )
 
 
+def annotation_image_and_classification_result(
+    url: str,
+    classification_result: ClassificationModelResult
+):
+
+    dt = datetime.utcnow().replace( tzinfo=timezone.utc )
+    dt_str = dt.isoformat( "T", "seconds" ).replace( '+00:00', 'Z' )
+
+    return {
+        "time": dt_str,
+        "annotated_image_url": url,
+        "classification_result": classification_result
+    }
+
+
 @app.get("/", include_in_schema=False)
 async def index():
     """Convenience redirect to OpenAPI spec UI for service."""
@@ -96,10 +113,10 @@ def tf_from_upload(
     )
 
     if( res_path is None ):
-        return {
-            "url": None,
-            "classification_result": classification_result
-        }
+        return annotation_image_and_classification_result(
+            None,
+            classification_result
+        )
 
     rel_path = os.path.relpath( res_path, output_path )
 
@@ -107,10 +124,10 @@ def tf_from_upload(
         'outputs', path=rel_path
     )
 
-    return {
-        "url": url_path_for_output,
-        "classification_result": classification_result
-    }
+    return annotation_image_and_classification_result(
+        url_path_for_output,
+        classification_result
+    )
 
 
 # @app.post(
@@ -176,10 +193,10 @@ def yolo_from_upload(
     )
 
     if( res_path is None ):
-        return {
-            "url": None,
-            "classification_result": classification_result
-        }
+        return annotation_image_and_classification_result(
+            None,
+            classification_result
+        )
 
     rel_path = os.path.relpath( res_path, output_path )
 
@@ -187,10 +204,10 @@ def yolo_from_upload(
         'outputs', path=rel_path
     )
 
-    return {
-        "url": url_path_for_output,
-        "classification_result": classification_result
-    }
+    return annotation_image_and_classification_result(
+        url_path_for_output,
+        classification_result
+    )
 
 # @app.post(
 #     f"{YOLO_ENDPOINT_PREFIX}/{{model}}/{{version}}/url",
