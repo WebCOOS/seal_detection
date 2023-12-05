@@ -61,7 +61,11 @@ def tf_process_image(
     if( isinstance( version, TFModelVersion ) ):
         version = version.value
 
-    ret: ClassificationModelResult = ClassificationModelResult()
+    ret: ClassificationModelResult = ClassificationModelResult(
+        ModelFramework.TF.value,
+        model,
+        version
+    )
 
     npdata = np.asarray(bytearray(bytedata), dtype="uint8")
     image = cv2.imdecode(npdata, cv2.IMREAD_COLOR)

@@ -11,7 +11,15 @@ class BoundingBoxPoint:
 
 
 @dataclass
-class ClassificationModelResult:
+class ClassificationModelResult():
+
+    # Example: YOLO, best_seal, 1
+    classification_model_framework: str
+    classification_model_name: str
+    classification_model_version: str
+
+    detected: bool = False
+    detection_count: int = 0
 
     classification_scores: List[Dict[str, float]] = field(default_factory=list)
     classification_bboxes: List[Tuple[BoundingBoxPoint]] = field(default_factory=list)
@@ -41,5 +49,10 @@ class ClassificationModelResult:
         if bbox is not None:
 
             self.classification_bboxes.append( bbox )
+
+        self.detection_count += 1
+
+        if( self.detection_count > 0 ):
+            self.detected = True
 
         return

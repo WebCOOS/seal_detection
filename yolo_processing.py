@@ -59,7 +59,11 @@ def yolo_process_image(
     if( isinstance( version, YOLOModelVersion ) ):
         version = version.value
 
-    ret: ClassificationModelResult = ClassificationModelResult()
+    ret: ClassificationModelResult = ClassificationModelResult(
+        ModelFramework.YOLO.name,
+        model,
+        version
+    )
 
     output_file = output_path / model / str(version) / name
 
