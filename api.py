@@ -3,7 +3,7 @@ import os
 from typing import Any
 from pathlib import Path
 from pydantic import BaseModel
-from fastapi import FastAPI, Depends, UploadFile
+from fastapi import FastAPI, Depends, UploadFile, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from tf_processing import tf_process_image, TF_MODELS
@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 logger = logging.getLogger( __name__ )
 
 
-app = FastAPI()
+app: FastAPI = FastAPI()
 # Prometheus metrics
 metrics_app = make_metrics_app()
 app.mount("/metrics", metrics_app)
@@ -90,6 +90,7 @@ async def index():
     summary="Tensorflow/EffDet model prediction on image upload"
 )
 def tf_from_upload(
+    request: Request,
     model: TFModelName,
     version: TFModelVersion,
     file: UploadFile,
@@ -120,9 +121,18 @@ def tf_from_upload(
 
     rel_path = os.path.relpath( res_path, output_path )
 
-    url_path_for_output = app.url_path_for(
-        'outputs', path=rel_path
-    )
+    url_path_for_output = rel_path
+
+    try:
+        # Try for an absolute URL (prefixed with http(s)://hostname, etc.)
+        url_path_for_output = str( request.url_for( 'outputs', path=rel_path ) )
+    except Exception:
+        # Fall back to the relative URL determined by the router
+        url_path_for_output = app.url_path_for(
+            'outputs', path=rel_path
+        )
+    finally:
+        pass
 
     return annotation_image_and_classification_result(
         url_path_for_output,
@@ -170,6 +180,7 @@ def tf_from_upload(
     summary="Ultralytics/YOLOv8 model prediction on image upload",
 )
 def yolo_from_upload(
+    request: Request,
     model: YOLOModelName,
     version: YOLOModelVersion,
     file: UploadFile,
@@ -200,9 +211,18 @@ def yolo_from_upload(
 
     rel_path = os.path.relpath( res_path, output_path )
 
-    url_path_for_output = app.url_path_for(
-        'outputs', path=rel_path
-    )
+    url_path_for_output = rel_path
+
+    try:
+        # Try for an absolute URL (prefixed with http(s)://hostname, etc.)
+        url_path_for_output = str( request.url_for( 'outputs', path=rel_path ) )
+    except Exception:
+        # Fall back to the relative URL determined by the router
+        url_path_for_output = app.url_path_for(
+            'outputs', path=rel_path
+        )
+    finally:
+        pass
 
     return annotation_image_and_classification_result(
         url_path_for_output,
