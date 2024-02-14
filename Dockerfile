@@ -40,6 +40,7 @@ COPY --chown=mambauser:mambauser *.py /app/
 
 # Copy container-specific configuration
 COPY --chown=mambauser:mambauser docker /docker/
+RUN chmod u+x /docker/scripts/expire-annotated-images.sh
 
 # Copy models
 COPY --chown=mambauser:mambauser models /models/
