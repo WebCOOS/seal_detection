@@ -6,12 +6,21 @@ Pre-trained ML models to detect seals in images, and APIs to use the models.
 
 ## Local setup
 
-It is recommended to create a new anaconda virtual environment using the following command.
+It is recommended to create a new Python virtual environment using `conda`, or
+its faster alternative, `micromamba`.
+
+`conda` environment creation and activation:
 
 ```shell
-conda create -n seal_det python=3.9
-conda activate seal_det
-conda install --file requirements.txt
+conda env create -f environment.yml
+conda activate webcoos_seal_detection
+```
+
+`micromamba` environment creation and activation:
+
+```shell
+micromamba create -f environment.yml
+micromamba activate webcoos_seal_detection
 ```
 
 ## FastAPI Serving
@@ -20,7 +29,6 @@ The models can be served using a FastAPI server. The server allows the POSTing o
 
 ```shell
 POST /{model_name}/{model_version}/upload - Image file upload endpoint
-POST /{model_name}/{model_version}/url - Image URL endpoint
 ```
 
 The server can be started with
