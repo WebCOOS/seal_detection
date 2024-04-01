@@ -6,7 +6,7 @@ import tensorflow as tf
 from pathlib import Path
 from score import ClassificationModelResult, BoundingBoxPoint
 from model_version import ModelFramework, TFModelName, TFModelVersion
-from metrics import increment_seal_counter
+from metrics import increment_seal_detection_counter, increment_seal_object_counter
 import logging
 
 logger = logging.getLogger( __name__ )
@@ -130,10 +130,17 @@ def tf_process_image(
             cv2.LINE_AA
         )
 
+        # Update object metrics
+        increment_seal_object_counter(
+            ModelFramework.TF.name,
+            model,
+            version
+        )
+
     if detected is True:
 
-        # Update metrics
-        increment_seal_counter(
+        # Update detection metrics
+        increment_seal_detection_counter(
             ModelFramework.TF.name,
             model,
             version
