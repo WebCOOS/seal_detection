@@ -116,7 +116,7 @@ def yolo_process_image(
 
             # Update object metrics
             increment_seal_object_counter(
-                ModelFramework.TF.name,
+                ModelFramework.YOLO.name,
                 model,
                 version
             )
